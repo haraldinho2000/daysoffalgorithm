@@ -1,0 +1,53 @@
+DECLARE METHOD CanITakeDaysOff(pdaysoffschedule)
+LOCAL bool bYesICan = FALSE
+ 
+# method is meant to:
+# 1) provide clear answer on how to determine you can take days off or need an exception
+# 2) lower unnecessary days off related email load on grouplead
+ 
+IF self.daysoff.type == “regular”
+THEN
+   IF self.ihavethedaysavailable
+    THEN
+        IF !events.PIrituals.overlap(pdaysoffschedule) OR self.grouplead.hasapprovedbymail.PIexception(pdaysoffschedule)
+        THEN
+            IF team.agreeswithmydaysoff() AND 
+                !team.picommitments.impacted AND 
+                !team.sprintcommitments.impacted AND
+                !team.support.impacted AND
+            THEN
+                IF (pdaysoffschedule.size() <= 14days) OR 
+                   (pdaysoffschedule.size() > 14days AND self.grouplead.hasapprovedbymail.sizeexception(pdaysoffschedule)) OR
+                   ((pdaysoffschedule.startDate > (today() + 3months)) AND
+                    self.grouplead.hasapprovedbymail.startdateexception(pdaysoffschedule))
+                THEN
+                    self.HolidayCalendar.update(pdaysoffschedule)
+                    self.Outlook.updateCalendar(pdaysoffschedule)
+                    self.Outlook.updateOutOfOfficeMessage(pdaysoffschedule)
+                    bYesICan = TRUE
+                ELSE
+                    self.replandaysoff()
+                FI
+            ELSE
+                IF self.istillwanttotakedaysoff AND
+                    (self.idisagreewithteamdecision() OR 
+                     team.picommitments.impacted OR 
+                     team.sprintcommitments.impacted OR 
+                     team.support.impacted) 
+                THEN
+                    self.grouplead.contact()
+                ELSE
+                    self.replandaysoff()
+                FI
+            FI
+        ELSE
+            self.replandaysoff()
+        FI
+    ELSE
+        self.savesomemoredays()
+    FI
+ELSE
+    self.grouplead.contact()
+FI
+ 
+RETURN(bYesICan)
