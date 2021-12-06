@@ -14,7 +14,7 @@ THEN
             IF team.agreeswithmydaysoff() AND 
                 !team.picommitments.impacted AND 
                 !team.sprintcommitments.impacted AND
-                !team.support.impacted AND
+                !team.support.impacted
             THEN
                 IF (pdaysoffschedule.size() <= 14days) OR 
                    (pdaysoffschedule.size() > 14days AND self.grouplead.hasapprovedbymail.sizeexception(pdaysoffschedule)) OR
