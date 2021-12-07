@@ -1,0 +1,2 @@
+require 'daysoffalgoritme'
+self.daysoffalgoritme([SAPIntefrace.json],upload)
